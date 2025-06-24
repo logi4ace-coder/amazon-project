@@ -140,14 +140,100 @@ function displayCart() {
               </div>
             </div>
           </div>`;
+          html += hml;
 
-            html += hml;
+          let deleteCartr = document.querySelector('.delete-quantity-link');
+
+          deleteCartr.addEventListener('click', function(event) {
+            event.preventDefault();
+          
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.zIndex = '1000';
+          
+            const popupBox = document.createElement('div');
+            popupBox.style.background = '#fff';
+            popupBox.style.padding = '20px 30px';
+            popupBox.style.borderRadius = '8px';
+            popupBox.style.textAlign = 'center';
+            popupBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+          
+            const message = document.createElement('p');
+            message.textContent = 'Are you sure you want to delete this item from your cart?';
+          
+            const yesBtn = document.createElement('button');
+            yesBtn.textContent = 'Yes, delete';
+            yesBtn.style.margin = '10px';
+            yesBtn.style.padding = '10px 20px';
+            yesBtn.style.backgroundColor = '#d33';
+            yesBtn.style.color = 'white';
+            yesBtn.style.border = 'none';
+            yesBtn.style.fontWeight = '600';
+          
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.style.margin = '10px';
+            cancelBtn.style.padding = '10px 20px';
+            cancelBtn.style.backgroundColor = '#e6e6e6';
+            cancelBtn.style.color = '#333';
+            cancelBtn.style.border = 'none';
+            cancelBtn.style.fontWeight = '600';
+          
+            popupBox.appendChild(message);
+            popupBox.appendChild(yesBtn);
+            popupBox.appendChild(cancelBtn);
+            overlay.appendChild(popupBox);
+            document.body.appendChild(overlay);
+          
+            yesBtn.addEventListener('click', () => {
+              console.log("Item deleted.");
+              document.body.removeChild(overlay);
+            });
+          
+            cancelBtn.addEventListener('click', () => {
+              console.log("Deletion canceled.");
+              document.body.removeChild(overlay);
+            });
+          });
+          
+          
 
         });
         //console.log(totalprice);
 
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        const P13ship = 177.25;
+        const P15ship = 88.54;
+        //const shippingDisplay = document.querySelector('.payment-summary-money1');
+        //let baseAmount = Number(shippingDisplay.textContent.substring(1));
 
 
+        let shippingAAMOUNT = 0;
+        cart.forEach(function (productInCart) {
+            if (productInCart.deliveryOptionId == 15) {
+                shippingAAMOUNT += P15ship;
+
+            }
+            else if (productInCart.deliveryOptionId == 13) {
+                shippingAAMOUNT += P13ship;
+
+            }
+            else {
+                shippingAAMOUNT += 0;
+            }
+        });
+        const taxRate = 0.1;
+        const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
+        const totalWithTax = subtotal * (1 + taxRate);
 
         let html2 = `<div class="payment-summary">
           <div class="payment-summary-title">
@@ -161,22 +247,24 @@ function displayCart() {
 
           <div class="payment-summary-row">
             <div>Shipping &amp; handling:</div>
-            <div class="payment-summary-money1">R${0}</div>
+            <div class="payment-summary-money1">R${(shippingAAMOUNT).toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row subtotal-row">
             <div>Total before tax:</div>
-            <div class="payment-summary-money">R${Number(totalprice).toFixed(2)}</div>
+            <div class="payment-summary-money2">
+            R${(Number(totalprice) + Number(shippingAAMOUNT)).toFixed(2)}
+            </div>
           </div>
 
           <div class="payment-summary-row">
             <div>Estimated tax (10%):</div>
-            <div class="payment-summary-money">R${Number(totalprice * 0.1).toFixed(2)}</div>
+            <div class="payment-summary-money3">R${Number((totalprice +shippingAAMOUNT) * 0.1).toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row total-row">
             <div>Order total:</div>
-            <div class="payment-summary-money">  R${(Number(totalprice) + Number(totalprice) * 0.1).toFixed(2)}
+            <div class="payment-summary-money4">  R${Number(totalWithTax).toFixed(2)}
 </div>
           </div>
 
@@ -193,24 +281,9 @@ function displayCart() {
         deliveryOpt.forEach(option => {
 
             option.addEventListener('click', function () {
-                const P13ship = 177.25;
-                const P15ship = 88.54;
-                const shippingDisplay = document.querySelector('.payment-summary-money1');
-                let baseAmount = Number(shippingDisplay.textContent.substring(1));
+
                 const container = this.closest('.cart-item-container');
                 const deliveryDate = this.nextElementSibling?.querySelector('.delivery-option-date')?.textContent.trim();
-
-                if (!container || !deliveryDate) return;
-
-                let extra = 0;
-                if (deliveryDate === 'Wednesday, June 15') {
-                    extra = P15ship;
-                } else if (deliveryDate === 'Monday, June 13') {
-                    extra = P13ship;
-                }
-
-                shippingDisplay.textContent = 'R' + (baseAmount + extra).toFixed(2);
-
                 const deliveryDateElem = container.querySelector('.delivery-date');
                 if (deliveryDateElem) {
                     deliveryDateElem.textContent = `Delivery date: ${deliveryDate}`;
@@ -224,6 +297,35 @@ function displayCart() {
                     cart[itemIndex].deliveryOptionId = Number(this.id);
                     localStorage.setItem('cart', JSON.stringify(cart));
                 }
+                const P13ship = 177.25;
+                const P15ship = 88.54;
+                const shippingDisplay = document.querySelector('.payment-summary-money1');
+                let baseAmount = Number(shippingDisplay.textContent.substring(1));
+                let totalBeforeTax = document.querySelector('.payment-summary-money2');
+                let tax = document.querySelector('.payment-summary-money3');
+                let total = document.querySelector('.payment-summary-money4');
+                if (!container || !deliveryDate) return;
+                let shippingAAMOUNT = 0;
+                cart.forEach(function (productInCart) {
+                    if (productInCart.deliveryOptionId == 15) {
+                        shippingAAMOUNT += P15ship;
+
+                    }
+                    else if (productInCart.deliveryOptionId == 13) {
+                        shippingAAMOUNT += P13ship;
+
+                    }
+                    else {
+                        shippingAAMOUNT += 0;
+                    }
+                });
+                const taxRate = 0.1;
+                const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
+                const totalWithTax = subtotal * (1 + taxRate);
+                total.textContent = 'R' + totalWithTax.toFixed(2);
+                shippingDisplay.textContent = 'R' + (shippingAAMOUNT).toFixed(2);
+                tax.textContent='R'+Number((totalprice +shippingAAMOUNT) * 0.1).toFixed(2);
+                totalBeforeTax.textContent='R'+((Number(totalprice) + Number(shippingAAMOUNT)).toFixed(2));
             });
         });
 
@@ -239,6 +341,7 @@ placeOrders.addEventListener('click', function () {
     placeOrder();
     window.location = 'orders.html';
 })
+
 
 function placeOrder() {
 
