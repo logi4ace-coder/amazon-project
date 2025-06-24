@@ -81,7 +81,63 @@ addToCartButton.textContent = 'Add to Cart';
     addedToCart.style.display='none';
     productContainer.append(addedToCart);
 
+    addToCartButton.addEventListener('click',function (){
+        addProductToCart(this,value.id);
+    });
     productContainer.append(addToCartButton);
     productGrid.append(productContainer);
 
 })
+function addProductToCart(element, productId){
+    //console.log(element);
+    let getLSCart = (localStorage.getItem('cart'));// array of objects
+    let closest =  element.previousElementSibling.previousElementSibling;
+    
+   // console.log(closest);
+    let cart =[];
+    let amount = closest.querySelector('select').value;
+    console.log(amount);
+
+    if(getLSCart==null || getLSCart=='null' || JSON.parse(getLSCart).length==0){
+        cart.push({id:uniqueID(),productId: productId, deliveryOptionId:uniqueID(),quantity:amount});
+      // console.log(cart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+    }   
+    else{
+        let parsedgetLSCart = JSON.parse(getLSCart);
+        let index=-1;
+        let exists = parsedgetLSCart.some((item) => {
+            index++;
+            console.log('item productid:', item.productId,'productId:',productId);
+            return item.productId === productId;
+        });
+        console.log(';index', index);
+        console.log(exists);
+        if(exists==true){
+            parsedgetLSCart[index]= {id:parsedgetLSCart[index].id,productId: productId, deliveryOptionId:parsedgetLSCart[index].deliveryOptionId,quantity:(Number(amount)  + Number((parsedgetLSCart.find((item)=> item.productId==productId).quantity)))}
+
+        }
+        else{
+            parsedgetLSCart.push({id:uniqueID(),productId: productId, deliveryOptionId:uniqueID(),quantity:amount});
+
+        }
+
+       //console.log(cart);
+        localStorage.setItem('cart', JSON.stringify(parsedgetLSCart));
+
+    }
+}
+function uniqueID() {
+    return crypto.randomUUID();
+  }
+  
+
+/*
+1
+: 
+{id: "257987ca-1005-4be7-839e-9c7658175626", productId: "15b6fc6f-327a-4ec4-896f-486349e85a3d",…}
+deliveryOptionId: "6e2dd65a-6665-4f24-bcdc-f2ecdbc6e156"
+id: "257987ca-1005-4be7-839e-9c7658175626"
+productId: "15b6fc6f-327a-4ec4-896f-486349e85a3d"
+quantity: 8 */
