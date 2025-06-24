@@ -25,11 +25,12 @@ input, select, button {
 }
 
 .button-primary {
-  color: rgb(33, 33, 33);
+  color: white;
   background-color: rgb(255, 216, 20);
   border: 1px solid rgb(252, 210, 0);
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bolder;
   box-shadow: 0 2px 5px rgba(213, 217, 217, 0.5);
 }
 
