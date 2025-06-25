@@ -28,44 +28,52 @@ let real = document.querySelector('.checkout-grid');
 
 function displayCart() {
 
-    let getLSCart = (localStorage.getItem('cart'));// array of objects
-    let html = '';
-    let cartQuant = document.querySelector('.return-to-home-link');
+  let getLSCart = (localStorage.getItem('cart'));// array of objects
+  console.log(getLSCart);
+  let html = '';
+  let cartQuant = document.querySelector('.return-to-home-link');
 
-    if (getLSCart == null || getLSCart == 'null' || JSON.parse(getLSCart).length == 0) {
-        let div = document.createElement('div');
-        div.innerHTML = emptySVG;
-        document.querySelector('.checkout-grid').innerHTML = '';
-        document.querySelector('.checkout-grid').append(div);
-        cartQuant.textContent = "0 items";
-    }
-    else {
-        let text21 = 'Delivery date: Tuesday, June 21';
-        let text15 = 'Delivery date: Wednesday, June 15';
-        let text13 = 'Delivery date: Monday, June 13';
+  if (getLSCart == null || getLSCart == 'null' || JSON.parse(getLSCart).length == 0) {
+    let div = document.createElement('div');
+    div.innerHTML = emptySVG;
+    document.querySelector('.checkout-grid').innerHTML = '';
+    document.querySelector('.checkout-grid').append(div);
+    cartQuant.textContent = "0 items";
+  }
+  else {
+    let text21 = 'Delivery date: Tuesday, June 21';
+    let text15 = 'Delivery date: Wednesday, June 15';
+    let text13 = 'Delivery date: Monday, June 13';
+    let quanityCount=0;
 
-        checkoutGrid.innerHTML = '';
-        let parsedgetLSCart = JSON.parse(getLSCart);
-        let rpod;
-        const count = parsedgetLSCart.length;
-        cartQuant.textContent = `${count} item${count !== 1 ? 's' : ''}`;
-        let totalprice = 0;
-        parsedgetLSCart.forEach((product) => {
-            //console.log(product)
-            const objectArray = products.filter(value => value.id == product.productId);
-            //console.log(objectArray);
-            rpod = objectArray[0];
-            let deliveryText;
+    checkoutGrid.innerHTML = '';
+    let parsedgetLSCart = JSON.parse(getLSCart);
+    let rpod;
+    const count = parsedgetLSCart.length;
+    let totalprice = 0;
+    parsedgetLSCart.forEach((product) => {
+      //console.log(product)
+      const objectArray = products.filter(value => {
+        if(value.id == product.productId){
+          quanityCount+=product.quantity;
+          return true;
+        }
+        
+      });
+      //console.log(objectArray);
+      rpod = objectArray[0];
+      let deliveryText;
 
-            if (product.deliveryOptionId == 21) {
-                deliveryText = 'Delivery date: Tuesday, June 21';
-            } else if (product.deliveryOptionId == 15) {
-                deliveryText = 'Delivery date: Wednesday, June 15';
-            } else if (product.deliveryOptionId == 13) {
-                deliveryText = 'Delivery date: Monday, June 13';
-            }
-            totalprice += parseFloat(((rpod.priceCents / 100) * 17.72).toFixed(2));
-            let hml = `<div class="cart-item-container">
+      if (product.deliveryOptionId == 21) {
+        deliveryText = 'Delivery date: Tuesday, June 21';
+      } else if (product.deliveryOptionId == 15) {
+        deliveryText = 'Delivery date: Wednesday, June 15';
+      } else if (product.deliveryOptionId == 13) {
+        deliveryText = 'Delivery date: Monday, June 13';
+      }
+      let productTotal = ((rpod.priceCents / 100) * 17.72) * product.quantity;
+      totalprice += parseFloat(productTotal.toFixed(2));
+      let hml = `<div class="cart-item-container">
             <div class="delivery-date">
              ${deliveryText}
             </div>
@@ -85,6 +93,7 @@ function displayCart() {
                   <span>
                     Quantity: <span class="quantity-label">${product.quantity}</span>
                   </span>
+                  <input class="js-new-quantity-input new-quantity-input" type="number"  data-testid="new-quantity-input">
                   <span class="update-quantity-link link-primary">
                     Update
                   </span>
@@ -140,108 +149,50 @@ function displayCart() {
               </div>
             </div>
           </div>`;
-          html += hml;
-
-          let deleteCartr = document.querySelector('.delete-quantity-link');
-
-          deleteCartr.addEventListener('click', function(event) {
-            event.preventDefault();
-          
-            const overlay = document.createElement('div');
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.background = 'rgba(0, 0, 0, 0.5)';
-            overlay.style.display = 'flex';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.zIndex = '1000';
-          
-            const popupBox = document.createElement('div');
-            popupBox.style.background = '#fff';
-            popupBox.style.padding = '20px 30px';
-            popupBox.style.borderRadius = '8px';
-            popupBox.style.textAlign = 'center';
-            popupBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-          
-            const message = document.createElement('p');
-            message.textContent = 'Are you sure you want to delete this item from your cart?';
-          
-            const yesBtn = document.createElement('button');
-            yesBtn.textContent = 'Yes, delete';
-            yesBtn.style.margin = '10px';
-            yesBtn.style.padding = '10px 20px';
-            yesBtn.style.backgroundColor = '#d33';
-            yesBtn.style.color = 'white';
-            yesBtn.style.border = 'none';
-            yesBtn.style.fontWeight = '600';
-          
-            const cancelBtn = document.createElement('button');
-            cancelBtn.textContent = 'Cancel';
-            cancelBtn.style.margin = '10px';
-            cancelBtn.style.padding = '10px 20px';
-            cancelBtn.style.backgroundColor = '#e6e6e6';
-            cancelBtn.style.color = '#333';
-            cancelBtn.style.border = 'none';
-            cancelBtn.style.fontWeight = '600';
-          
-            popupBox.appendChild(message);
-            popupBox.appendChild(yesBtn);
-            popupBox.appendChild(cancelBtn);
-            overlay.appendChild(popupBox);
-            document.body.appendChild(overlay);
-          
-            yesBtn.addEventListener('click', () => {
-              console.log("Item deleted.");
-              document.body.removeChild(overlay);
-            });
-          
-            cancelBtn.addEventListener('click', () => {
-              console.log("Deletion canceled.");
-              document.body.removeChild(overlay);
-            });
-          });
-          
-          
-
-        });
-        //console.log(totalprice);
-
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        const P13ship = 177.25;
-        const P15ship = 88.54;
-        //const shippingDisplay = document.querySelector('.payment-summary-money1');
-        //let baseAmount = Number(shippingDisplay.textContent.substring(1));
+      html += hml;
 
 
-        let shippingAAMOUNT = 0;
-        cart.forEach(function (productInCart) {
-            if (productInCart.deliveryOptionId == 15) {
-                shippingAAMOUNT += P15ship;
 
-            }
-            else if (productInCart.deliveryOptionId == 13) {
-                shippingAAMOUNT += P13ship;
 
-            }
-            else {
-                shippingAAMOUNT += 0;
-            }
-        });
-        const taxRate = 0.1;
-        const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
-        const totalWithTax = subtotal * (1 + taxRate);
+    });
+  //  console.log(totalprice);
 
-        let html2 = `<div class="payment-summary">
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    const P13ship = 177.25;
+    const P15ship = 88.54;
+    //const shippingDisplay = document.querySelector('.payment-summary-money1');
+    //let baseAmount = Number(shippingDisplay.textContent.substring(1));
+
+
+    let shippingAAMOUNT = 0;
+    cart.forEach(function (productInCart) {
+      if (productInCart.deliveryOptionId == 15) {
+        shippingAAMOUNT += P15ship;
+
+      }
+      else if (productInCart.deliveryOptionId == 13) {
+        shippingAAMOUNT += P13ship;
+
+      }
+      else {
+        shippingAAMOUNT += 0;
+      }
+
+    });
+    cartQuant.textContent = `${quanityCount} item${count !== 1 ? 's' : ''}`;
+
+    const taxRate = 0.1;
+    const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
+    const totalWithTax = subtotal * (1 + taxRate);
+
+    let html2 = `<div class="payment-summary">
           <div class="payment-summary-title">
             Order Summary
           </div>
 
           <div class="payment-summary-row">
-            <div>Items (${count}):</div>
+            <div>Items (${quanityCount}):</div>
             <div class="payment-summary-money">R${Number(totalprice).toFixed(2)}</div>
           </div>
 
@@ -259,7 +210,7 @@ function displayCart() {
 
           <div class="payment-summary-row">
             <div>Estimated tax (10%):</div>
-            <div class="payment-summary-money3">R${Number((totalprice +shippingAAMOUNT) * 0.1).toFixed(2)}</div>
+            <div class="payment-summary-money3">R${Number((totalprice + shippingAAMOUNT) * 0.1).toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row total-row">
@@ -272,65 +223,69 @@ function displayCart() {
             Place your order
           </button>
         </div>`;
-        real.innerHTML = html2 + html;
+    real.innerHTML = html2 + html;
 
-        let deliveryOpt = document.querySelectorAll('.delivery-option-input');
+    let deliveryOpt = document.querySelectorAll('.delivery-option-input');
+    displayPop();
+    updateCart();
+    console.log(deliveryOpt);
 
-        console.log(deliveryOpt);
+    deliveryOpt.forEach(option => {
 
-        deliveryOpt.forEach(option => {
+      option.addEventListener('click', function () {
 
-            option.addEventListener('click', function () {
+        const container = this.closest('.cart-item-container');
+        const deliveryDate = this.nextElementSibling?.querySelector('.delivery-option-date')?.textContent.trim();
+        const deliveryDateElem = container.querySelector('.delivery-date');
+        if (deliveryDateElem) {
+          deliveryDateElem.textContent = `Delivery date: ${deliveryDate}`;
+        }
 
-                const container = this.closest('.cart-item-container');
-                const deliveryDate = this.nextElementSibling?.querySelector('.delivery-option-date')?.textContent.trim();
-                const deliveryDateElem = container.querySelector('.delivery-date');
-                if (deliveryDateElem) {
-                    deliveryDateElem.textContent = `Delivery date: ${deliveryDate}`;
-                }
+        const name = container.querySelector('.product-name')?.textContent.trim();
+        const product = products.find(p => p.name === name);
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const itemIndex = cart.findIndex(item => item.productId === product?.id);
+        if (itemIndex !== -1) {
+          cart[itemIndex].deliveryOptionId = Number(this.id);
+          localStorage.setItem('cart', JSON.stringify(cart));
+        }
+        const P13ship = 177.25;
+        const P15ship = 88.54;
+        const shippingDisplay = document.querySelector('.payment-summary-money1');
+        let baseAmount = Number(shippingDisplay.textContent.substring(1));
+        let totalBeforeTax = document.querySelector('.payment-summary-money2');
+        let tax = document.querySelector('.payment-summary-money3');
+        let total = document.querySelector('.payment-summary-money4');
+        if (!container || !deliveryDate) return;
+        let shippingAAMOUNT = 0;
+        cart.forEach(function (productInCart) {
+          if (productInCart.deliveryOptionId == 15) {
+            shippingAAMOUNT += P15ship;
 
-                const name = container.querySelector('.product-name')?.textContent.trim();
-                const product = products.find(p => p.name === name);
-                const cart = JSON.parse(localStorage.getItem('cart')) || [];
-                const itemIndex = cart.findIndex(item => item.productId === product?.id);
-                if (itemIndex !== -1) {
-                    cart[itemIndex].deliveryOptionId = Number(this.id);
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                }
-                const P13ship = 177.25;
-                const P15ship = 88.54;
-                const shippingDisplay = document.querySelector('.payment-summary-money1');
-                let baseAmount = Number(shippingDisplay.textContent.substring(1));
-                let totalBeforeTax = document.querySelector('.payment-summary-money2');
-                let tax = document.querySelector('.payment-summary-money3');
-                let total = document.querySelector('.payment-summary-money4');
-                if (!container || !deliveryDate) return;
-                let shippingAAMOUNT = 0;
-                cart.forEach(function (productInCart) {
-                    if (productInCart.deliveryOptionId == 15) {
-                        shippingAAMOUNT += P15ship;
+          }
+          else if (productInCart.deliveryOptionId == 13) {
+            shippingAAMOUNT += P13ship;
 
-                    }
-                    else if (productInCart.deliveryOptionId == 13) {
-                        shippingAAMOUNT += P13ship;
-
-                    }
-                    else {
-                        shippingAAMOUNT += 0;
-                    }
-                });
-                const taxRate = 0.1;
-                const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
-                const totalWithTax = subtotal * (1 + taxRate);
-                total.textContent = 'R' + totalWithTax.toFixed(2);
-                shippingDisplay.textContent = 'R' + (shippingAAMOUNT).toFixed(2);
-                tax.textContent='R'+Number((totalprice +shippingAAMOUNT) * 0.1).toFixed(2);
-                totalBeforeTax.textContent='R'+((Number(totalprice) + Number(shippingAAMOUNT)).toFixed(2));
-            });
+          }
+          else {
+            shippingAAMOUNT += 0;
+          }
         });
+        const taxRate = 0.1;
+        const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
+        const totalWithTax = subtotal * (1 + taxRate);
+        total.textContent = 'R' + totalWithTax.toFixed(2);
+        shippingDisplay.textContent = 'R' + (shippingAAMOUNT).toFixed(2);
+        tax.textContent = 'R' + Number((totalprice + shippingAAMOUNT) * 0.1).toFixed(2);
+        totalBeforeTax.textContent = 'R' + ((Number(totalprice) + Number(shippingAAMOUNT)).toFixed(2));
+      });
+    });
 
 
-    }
+
+
+
+  }
 
 }
 
@@ -338,12 +293,116 @@ displayCart();
 
 let placeOrders = document.querySelector('.place-order-button');
 placeOrders.addEventListener('click', function () {
-    placeOrder();
-    window.location = 'orders.html';
+  placeOrder();
+  window.location = 'orders.html';
 })
 
 
 function placeOrder() {
 
 }
+function displayPop() {
+  let deleteCartr = document.querySelectorAll('.delete-quantity-link');
+  deleteCartr.forEach((value) => {
+    value.addEventListener('click', function (event) {
+      event.preventDefault();
+      let closeOuter = this.closest('.cart-item-container');
+      console.log(closeOuter);
 
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.background = 'rgba(0, 0, 0, 0.5)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = '1000';
+
+      const popupBox = document.createElement('div');
+      popupBox.style.background = '#fff';
+      popupBox.style.padding = '20px 30px';
+      popupBox.style.borderRadius = '8px';
+      popupBox.style.textAlign = 'center';
+      popupBox.style.border = '1px solid rgb(255, 216, 20)'
+      popupBox.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+
+      const message = document.createElement('p');
+      message.textContent = 'Are you sure you want to delete this item from your cart?';
+
+      const yesBtn = document.createElement('button');
+      yesBtn.textContent = 'Yes, delete';
+      yesBtn.style.margin = '10px';
+      yesBtn.style.padding = '10px 20px';
+      yesBtn.style.backgroundColor = '#d33';
+      yesBtn.style.color = 'white';
+      yesBtn.style.border = 'none';
+      yesBtn.style.fontWeight = '600';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.margin = '10px';
+      cancelBtn.style.padding = '10px 20px';
+      cancelBtn.style.backgroundColor = '#e6e6e6';
+      cancelBtn.style.color = '#333';
+      cancelBtn.style.border = 'none';
+      cancelBtn.style.fontWeight = '600';
+
+      popupBox.appendChild(message);
+      popupBox.appendChild(yesBtn);
+      popupBox.appendChild(cancelBtn);
+      overlay.appendChild(popupBox);
+      document.body.appendChild(overlay);
+
+      yesBtn.addEventListener('click', function () {
+        //console.log("Item deleted.");
+        let ls = JSON.parse(localStorage.getItem('cart'))
+        let name = closeOuter.querySelector('.product-name').textContent.trim();
+        const availableProduct = products.filter((value) => {
+          if (value.name == name) {
+            return true;
+          }
+        });
+        console.log(availableProduct);
+                let productToDelete = availableProduct[0];
+        let id = productToDelete.id;
+        const index = ls.findIndex(value => value.productId === id);
+
+        ls.splice(index,1);
+        localStorage.setItem('cart', JSON.stringify(ls));
+        displayCart();
+
+        document.body.removeChild(overlay);
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        //console.log("Deletion canceled.");
+        document.body.removeChild(overlay);
+      });
+    });
+  })
+
+
+}
+
+function updateCart(){
+  let updateCart = document.querySelectorAll('.update-quantity-link');
+  updateCart.forEach((value) => {
+    value.addEventListener('click', function (event) {
+      let input = document.createElement('input');
+      input.type='number';
+      
+      let cloaseWrapper = this.closest('.cart-item-container');
+      let currentSize=cloaseWrapper.querySelector('.product-quantity span').textContent;
+
+      let amount = Number(currentSize[currentSize.indexOf('1')]);
+      console.log(amount);
+      cloaseWrapper.querySelector('.product-quantity span').textContent='Quantity: ';
+
+      value.textContent='Save'; 
+
+  })
+});
+}
