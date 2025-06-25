@@ -44,7 +44,7 @@ function displayCart() {
     let text21 = 'Delivery date: Tuesday, June 21';
     let text15 = 'Delivery date: Wednesday, June 15';
     let text13 = 'Delivery date: Monday, June 13';
-    let quanityCount=0;
+    let quanityCount = 0;
 
     checkoutGrid.innerHTML = '';
     let parsedgetLSCart = JSON.parse(getLSCart);
@@ -54,11 +54,11 @@ function displayCart() {
     parsedgetLSCart.forEach((product) => {
       //console.log(product)
       const objectArray = products.filter(value => {
-        if(value.id == product.productId){
-          quanityCount+=product.quantity;
+        if (value.id == product.productId) {
+          quanityCount += (product.quantity);
           return true;
         }
-        
+
       });
       //console.log(objectArray);
       rpod = objectArray[0];
@@ -93,7 +93,7 @@ function displayCart() {
                   <span>
                     Quantity: <span class="quantity-label">${product.quantity}</span>
                   </span>
-                  <input class="js-new-quantity-input new-quantity-input" type="number"  data-testid="new-quantity-input">
+                  <input hidden class="js-new-quantity-input new-quantity-input" type="number"  data-testid="new-quantity-input">
                   <span class="update-quantity-link link-primary">
                     Update
                   </span>
@@ -155,7 +155,7 @@ function displayCart() {
 
 
     });
-  //  console.log(totalprice);
+    //  console.log(totalprice);
 
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
 
@@ -180,6 +180,10 @@ function displayCart() {
       }
 
     });
+    console.log('i am',quanityCount);
+    if(String(quanityCount)[0]=='0'){
+        quanityCount= String(quanityCount).substring(1);
+    }
     cartQuant.textContent = `${quanityCount} item${count !== 1 ? 's' : ''}`;
 
     const taxRate = 0.1;
@@ -366,11 +370,11 @@ function displayPop() {
           }
         });
         console.log(availableProduct);
-                let productToDelete = availableProduct[0];
+        let productToDelete = availableProduct[0];
         let id = productToDelete.id;
         const index = ls.findIndex(value => value.productId === id);
 
-        ls.splice(index,1);
+        ls.splice(index, 1);
         localStorage.setItem('cart', JSON.stringify(ls));
         displayCart();
 
@@ -387,22 +391,60 @@ function displayPop() {
 
 }
 
-function updateCart(){
+function updateCart() {
   let updateCart = document.querySelectorAll('.update-quantity-link');
   updateCart.forEach((value) => {
     value.addEventListener('click', function (event) {
-      let input = document.createElement('input');
-      input.type='number';
+      //console.log(this.textContent);
+      if(this.textContent.trim()== 'Update'){
+        let input = document.createElement('input');
+        input.type = 'number';
+  
+        let cloaseWrapper = this.closest('.cart-item-container');
+        let currentSize = cloaseWrapper.querySelector('.product-quantity span').textContent;
+  
+        let amount = Number(currentSize[currentSize.indexOf('1')]);
+        console.log(amount);
+        cloaseWrapper.querySelector('.product-quantity span').textContent = 'Quantity: ';
+        let div = document.querySelector('.product-quantity');
+        div.classList.add('is-updating-quantity');
+        let pcc = document.querySelector('.product-quantity input');
+        pcc.hidden = false;
+        pcc.value = amount;
+        value.textContent = 'Save';
+      }
+      else{
+        let parsedgetLSCart = JSON.parse((localStorage.getItem('cart')));
+        let index=-1;
+        let cloaseWrapper = this.closest('.cart-item-container');
+      let name = cloaseWrapper.querySelector('.product-name').textContent;
+        let exists = parsedgetLSCart.some((item) => {
+          index++;
+          return item.name === name;
+      });
       
-      let cloaseWrapper = this.closest('.cart-item-container');
-      let currentSize=cloaseWrapper.querySelector('.product-quantity span').textContent;
+      let neewAmount = cloaseWrapper.querySelector('.js-new-quantity-input').value;
+      if(neewAmount==0){
+        let deleteCartr = cloaseWrapper.querySelector('.delete-quantity-link');
+        deleteCartr.click();
+      }
+      else{
+        parsedgetLSCart[index] = { id: parsedgetLSCart[index].id, productId: parsedgetLSCart[index].productId, deliveryOptionId: parsedgetLSCart[index].deliveryOptionId, quantity: neewAmount }
+        localStorage.setItem('cart', JSON.stringify(parsedgetLSCart));
+        displayCart();
+      }
+      }
+       
+      
+    
 
-      let amount = Number(currentSize[currentSize.indexOf('1')]);
-      console.log(amount);
-      cloaseWrapper.querySelector('.product-quantity span').textContent='Quantity: ';
-
-      value.textContent='Save'; 
-
-  })
-});
+    })
+  });
 }
+const input = document.querySelector('input[type="number"]');
+input.addEventListener('input', (event) => {
+  console.log('New value:', event.target.value);
+  if(event.target.value<0){
+    input.value=1;
+  }
+});
