@@ -184,7 +184,7 @@ function displayCart() {
     if (String(quanityCount)[0] == '0') {
       quanityCount = Number(String(quanityCount).substring(1));
     }
-    cartQuant.textContent = `${quanityCount} item${count !== 1 ? 's' : ''}`;
+    cartQuant.textContent = `${quanityCount} item${quanityCount !== 1 ? 's' : ''}`;
 
     const taxRate = 0.1;
     const subtotal = Number(totalprice) + Number(shippingAAMOUNT);
@@ -403,8 +403,9 @@ function updateCart() {
         let cloaseWrapper = this.closest('.cart-item-container');
         let currentSize = cloaseWrapper.querySelector('.product-quantity span').textContent;
         console.log('amount before', currentSize)
-        let amount = Number(currentSize.substring(currentSize.indexOf('1')));
-        console.log(amount);
+        let quantityText = currentSize.replace('Quantity: ', '');
+        let amount = Number(quantityText);
+        console.log('amount after', amount);
         cloaseWrapper.querySelector('.product-quantity span').textContent = 'Quantity: ';
         let div = cloaseWrapper.querySelector('.product-quantity');
         div.classList.add('is-updating-quantity');

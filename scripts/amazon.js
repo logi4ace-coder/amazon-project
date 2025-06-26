@@ -160,7 +160,11 @@ function quanityCount() {
     }
     else {
         let parsedgetLSCart = JSON.parse(getLSCart);
-        quanityCount.textContent = parsedgetLSCart.length;
+        let cartQuant=0;
+        parsedgetLSCart.forEach((value)=>{
+            cartQuant+=value.quantity;
+        });
+        quanityCount.textContent = cartQuant;
 
     }
 }
