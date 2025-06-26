@@ -102,7 +102,7 @@ products.forEach((value) => {
     productGrid.append(productContainer);
 
 })
-function addProductToCart(element, productId) {
+  function addProductToCart(element, productId) {
     //console.log(element);
     let getLSCart = (localStorage.getItem('cart'));// array of objects
     let closest = element.previousElementSibling.previousElementSibling;

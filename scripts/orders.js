@@ -1,3 +1,4 @@
+
 function quanityCount() {
     let getLSCart = (localStorage.getItem('cart'));// array of objects
 
@@ -48,8 +49,10 @@ function fillOrders() {
         gidContainer.innerHTML = svg;
     }
     else {
-       // console.log(products);
-        orderFromLSParsed.forEach((value)=>{
+        // console.log(products);
+        console.log('orderFromLSParsed length ', orderFromLSParsed.length);
+
+        orderFromLSParsed.forEach((value) => {
 
             let orderDate = new Date(value.orderTimeMS);
             let formattedDate = orderDate.toLocaleDateString('en-US', {
@@ -60,70 +63,120 @@ function fillOrders() {
             let orderId = value.id;
             // prepend this <div class="order-container"> ansd append </div>
             let orderHtml = ` 
-          <div class="order-container">
-            <div class="order-header">
-              <div class="order-header-left-section">
-                <div class="order-date">
-                  <div class="order-header-label">Order Placed:</div>
-                  <div>${formattedDate}</div>
-                </div>
-                <div class="order-total">
-                  <div class="order-header-label">Total:</div>
-                  <div>R${orderPrice}</div>
-                </div>
-              </div>
-  
-              <div class="order-header-right-section">
-                <div class="order-header-label">Order ID:</div>
-                <div>${orderId}</div>
-              </div>
-            </div>`
-            let orderHtml2='';
-            value.products.forEach((product)=>{
-                let arrvingOn = new Date(product.estimatedDeliveryTimeMs).toLocaleDateString('en-US',{
-                    month : 'long',
-                    day:'numeric'
-                });
-                const actualProductArray = products.find((fromData)=> fromData.id == product.productId);
-                const actualProduct= actualProductArray;
-                //console.log('actualProductArray',actualProductArray);
-                let quantity = product.quantity;
-                orderHtml2=`
-  
-                <div class="order-details-grid">
-                  <div class="product-image-container">
-                    <img src= ${actualProduct.image}>
-                  </div>
-      
-                  <div class="product-details">
-                    <div class="product-name">
-                     ${actualProduct.name}
+                <div class="order-container">
+                    <div class="order-header">
+                    <div class="order-header-left-section">
+                        <div class="order-date">
+                        <div class="order-header-label">Order Placed:</div>
+                        <div>${formattedDate}</div>
+                        </div>
+                        <div class="order-total">
+                        <div class="order-header-label">Total:</div>
+                        <div>R${orderPrice}</div>
+                        </div>
                     </div>
-                    <div class="product-delivery-date">
-                      Arriving on: ${arrvingOn}
-                    </div>
-                    <div class="product-quantity">
-                      Quantity: ${quantity}
-                    </div>
-                    <button class="buy-again-button button-primary">
-                      <img class="buy-again-icon" src="images/icons/buy-again.png">
-                      <span class="buy-again-message">Buy it again</span>
-                    </button>
-                  </div>
-      
-                  <div class="product-actions">
-                    <a href="tracking.html">
-                      <button class="track-package-button button-secondary">
-                        Track package
-                      </button>
-                    </a>
-                  </div>`
-            })
-            orderHtml2+='</div>';
 
-            gidContainer.innerHTML=(orderHtml+orderHtml2);
+                    <div class="order-header-right-section">
+                        <div class="order-header-label">Order ID:</div>
+                        <div>${orderId}</div>
+                    </div>
+                    </div>
+
+                    <div class="order-details-grid">`;
+
+            value.products.forEach((product) => {
+                let arrivingOn = new Date(product.estimatedDeliveryTimeMs).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const actualProduct = products.find((fromData) => fromData.id == product.productId);
+
+                orderHtml += `
+
+                    <div class="product-row"> 
+                        <div class="product-image-container">
+                        <img src="${actualProduct.image}">
+                    </div>
+
+                    <div class="product-details">
+                        <div class="product-name">${actualProduct.name}</div>
+                        <div class="product-delivery-date">Arriving on: ${arrivingOn}</div>
+                        <div class="product-quantity">Quantity: ${product.quantity}</div>
+                        <button class="buy-again-button button-primary">
+                        <img class="buy-again-icon" src="images/icons/buy-again.png">
+                        <span class="buy-again-message">Buy it again</span>
+                        </button>
+                    </div>
+
+                    <div class="product-actions">
+                        <a href="tracking.html">
+                        <button class="track-package-button button-secondary">
+                            Track package
+                        </button>
+                        </a>
+                    </div>
+                    </div>`;
+            });
+
+            orderHtml += `</div> </div>`;
+
+            gidContainer.insertAdjacentHTML('beforeend', orderHtml);
         });
+
+        document.querySelectorAll('.buy-again-button').forEach((button) => {
+            button.addEventListener('click', function () {
+              const orderContainer = this.closest('.order-container');
+              const productRow = this.closest('.product-row');
+          
+              const orderID = orderContainer.querySelector('.order-header-right-section .order-header-label').nextElementSibling.textContent.trim();
+              const repeatedOrder = orderFromLSParsed.find(order => order.id === orderID);
+          
+              const productName = productRow.querySelector('.product-name').textContent.trim();
+              const matchedProduct = products.find(p => p.name === productName);
+          
+              if (!matchedProduct) {
+                console.warn('Product not found in products list.');
+                return;
+              }
+              console.log(matchedProduct);
+              const productInOrder = repeatedOrder.products.find(p => p.productId === matchedProduct.id);
+              if (!productInOrder) {
+                console.warn('Product not found in order.');
+                return;
+              }
+          
+              const quantity = productInOrder.quantity;
+              const deliveryDate = new Date(productInOrder.estimatedDeliveryTimeMs);
+              const deliveryDay = deliveryDate.getDate();
+          
+              addProductToCart(this, matchedProduct.id, deliveryDay, quantity);
+            });
+          });
+          
+
     }
 
 
+}
+// add to cart gaain
+function addProductToCart(element, productId, deliveryOptionId, quantity) {
+    const cartLS = localStorage.getItem('cart');
+    let cart = cartLS ? JSON.parse(cartLS) : [];
+  
+    const existingIndex = cart.findIndex(item => item.productId === productId);
+  
+    if (existingIndex !== -1) {
+      const existingItem = cart[existingIndex];
+      existingItem.quantity += Number(quantity);
+    }
+    else {
+      cart.push({ id: uniqueID(), productId, deliveryOptionId, quantity: Number(quantity)});
+    }
+  
+    localStorage.setItem('cart', JSON.stringify(cart));
+    quanityCount();
+  }
+  
+function uniqueID() {
+    return crypto.randomUUID();
 }
