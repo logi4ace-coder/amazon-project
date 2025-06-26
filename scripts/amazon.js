@@ -113,7 +113,7 @@ function addProductToCart(element, productId) {
     console.log(amount);
 
     if (getLSCart == null || getLSCart == 'null' || JSON.parse(getLSCart).length == 0) {
-        cart.push({ id: uniqueID(), productId: productId, deliveryOptionId: 21, quantity: amount });
+        cart.push({ id: uniqueID(), productId: productId, deliveryOptionId: 21, quantity: Number(amount) });
         // console.log(cart);
         localStorage.setItem('cart', JSON.stringify(cart));
 
@@ -129,11 +129,11 @@ function addProductToCart(element, productId) {
         console.log(';index', index);
         console.log(exists);
         if (exists == true) {
-            parsedgetLSCart[index] = { id: parsedgetLSCart[index].id, productId: productId, deliveryOptionId: parsedgetLSCart[index].deliveryOptionId, quantity: (Number(amount) + Number((parsedgetLSCart.find((item) => item.productId == productId).quantity))) }
+            parsedgetLSCart[index] = { id: parsedgetLSCart[index].id, productId: productId, deliveryOptionId: parsedgetLSCart[index].deliveryOptionId, quantity: Number((Number(amount) + Number((parsedgetLSCart.find((item) => item.productId == productId).quantity)))) }
 
         }
         else {
-            parsedgetLSCart.push({ id: uniqueID(), productId: productId, deliveryOptionId: 21, quantity: amount });
+            parsedgetLSCart.push({ id: uniqueID(), productId: productId, deliveryOptionId: 21, quantity: Number(amount) });
 
         }
 

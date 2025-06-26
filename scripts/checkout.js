@@ -55,7 +55,7 @@ function displayCart() {
       //console.log(product)
       const objectArray = products.filter(value => {
         if (value.id == product.productId) {
-          quanityCount += (product.quantity);
+          quanityCount += Number((product.quantity));
           return true;
         }
 
@@ -180,9 +180,9 @@ function displayCart() {
       }
 
     });
-    console.log('i am',quanityCount);
-    if(String(quanityCount)[0]=='0'){
-        quanityCount= String(quanityCount).substring(1);
+    console.log('quanityCount', quanityCount);
+    if (String(quanityCount)[0] == '0') {
+      quanityCount = Number(String(quanityCount).substring(1));
     }
     cartQuant.textContent = `${quanityCount} item${count !== 1 ? 's' : ''}`;
 
@@ -396,47 +396,50 @@ function updateCart() {
   updateCart.forEach((value) => {
     value.addEventListener('click', function (event) {
       //console.log(this.textContent);
-      if(this.textContent.trim()== 'Update'){
+      if (this.textContent.trim() == 'Update') {
         let input = document.createElement('input');
         input.type = 'number';
-  
+
         let cloaseWrapper = this.closest('.cart-item-container');
         let currentSize = cloaseWrapper.querySelector('.product-quantity span').textContent;
-  
-        let amount = Number(currentSize[currentSize.indexOf('1')]);
+        console.log('amount before', currentSize)
+        let amount = Number(currentSize.substring(currentSize.indexOf('1')));
         console.log(amount);
         cloaseWrapper.querySelector('.product-quantity span').textContent = 'Quantity: ';
-        let div = document.querySelector('.product-quantity');
+        let div = cloaseWrapper.querySelector('.product-quantity');
         div.classList.add('is-updating-quantity');
-        let pcc = document.querySelector('.product-quantity input');
+        let pcc = cloaseWrapper.querySelector('.product-quantity input');
         pcc.hidden = false;
         pcc.value = amount;
         value.textContent = 'Save';
       }
-      else{
+      else {
         let parsedgetLSCart = JSON.parse((localStorage.getItem('cart')));
-        let index=-1;
+        let index = -1;
         let cloaseWrapper = this.closest('.cart-item-container');
-      let name = cloaseWrapper.querySelector('.product-name').textContent;
+        let name = cloaseWrapper.querySelector('.product-name').textContent;
         let exists = parsedgetLSCart.some((item) => {
           index++;
           return item.name === name;
-      });
-      
-      let neewAmount = cloaseWrapper.querySelector('.js-new-quantity-input').value;
-      if(neewAmount==0){
-        let deleteCartr = cloaseWrapper.querySelector('.delete-quantity-link');
-        deleteCartr.click();
+        });
+
+        let neewAmount = cloaseWrapper.querySelector('.js-new-quantity-input').value;
+        console.log('neewAmount)', neewAmount);
+        if (neewAmount == 0) {
+          let deleteCartr = cloaseWrapper.querySelector('.delete-quantity-link');
+          deleteCartr.click();
+          displayCart();
+
+        }
+        else {
+          parsedgetLSCart[index] = { id: parsedgetLSCart[index].id, productId: parsedgetLSCart[index].productId, deliveryOptionId: parsedgetLSCart[index].deliveryOptionId, quantity: Number(neewAmount) }
+          localStorage.setItem('cart', JSON.stringify(parsedgetLSCart));
+          displayCart();
+        }
       }
-      else{
-        parsedgetLSCart[index] = { id: parsedgetLSCart[index].id, productId: parsedgetLSCart[index].productId, deliveryOptionId: parsedgetLSCart[index].deliveryOptionId, quantity: neewAmount }
-        localStorage.setItem('cart', JSON.stringify(parsedgetLSCart));
-        displayCart();
-      }
-      }
-       
-      
-    
+
+
+
 
     })
   });
@@ -444,7 +447,7 @@ function updateCart() {
 const input = document.querySelector('input[type="number"]');
 input.addEventListener('input', (event) => {
   console.log('New value:', event.target.value);
-  if(event.target.value<0){
-    input.value=1;
+  if (event.target.value < 0) {
+    input.value = 1;
   }
 });
