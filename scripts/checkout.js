@@ -298,12 +298,46 @@ displayCart();
 let placeOrders = document.querySelector('.place-order-button');
 placeOrders.addEventListener('click', function () {
   placeOrder();
+
+
   window.location = 'orders.html';
 })
 
-
+function generateID() {
+  return crypto.randomUUID();
+}
 function placeOrder() {
+  const cartProductsPurchased = JSON.parse(localStorage.getItem('cart'));
+  const orderTimeMS = Date.now();
+  const orderId = crypto.randomUUID();
 
+  
+  const productsArray = cartProductsPurchased.map((prod) => ({
+  cartItemId: prod.id,
+  estimatedDeliveryTimeMs: (prod.deliveryOptionId==13) ? 
+    (new Date('2025-06-03')).getTime() : 
+    (prod.deliveryOptionId==21) ? 
+    (new Date('2025-06-21')).getTime() : 
+    (new Date('2025-06-15')).getTime(),
+  productId: prod.productId,
+  quantity: prod.quantity
+}));
+let a = document.querySelector('.payment-summary-money4').textContent.trim();
+  const orderTotal = Number((a.slice(1)));
+  const totalCostCents = orderTotal;
+
+  const orderObject = {
+    id: orderId,
+    orderTimeMS,
+    products: productsArray,
+    totalCostCents
+  };
+
+  const orders = JSON.parse(localStorage.getItem('orders')) || [];
+  orders.push(orderObject);
+  localStorage.setItem('orders', JSON.stringify(orders));
+
+  localStorage.removeItem('cart');
 }
 function displayPop() {
   let deleteCartr = document.querySelectorAll('.delete-quantity-link');
