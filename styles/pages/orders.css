@@ -218,3 +218,29 @@
     padding: 12px;
   }
 }
+.bg {
+  fill: white;
+  stroke: #FF9900;
+  stroke-width: 2;
+  rx: 12;
+  ry: 12;
+}
+.text {
+  fill: #111;
+  font-family: "Amazon Ember", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+}
+.icon {
+  fill: none;
+  stroke: #FF9900;
+  stroke-width: 2;
+}
+.cross {
+  stroke: #FF9900;
+  stroke-width: 3;
+}
+.underline {
+  stroke: #FF9900;
+  stroke-width: 3;
+}

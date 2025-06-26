@@ -29,7 +29,6 @@ let real = document.querySelector('.checkout-grid');
 function displayCart() {
 
   let getLSCart = (localStorage.getItem('cart'));// array of objects
-  console.log(getLSCart);
   let html = '';
   let cartQuant = document.querySelector('.return-to-home-link');
 
@@ -232,7 +231,6 @@ function displayCart() {
     let deliveryOpt = document.querySelectorAll('.delivery-option-input');
     displayPop();
     updateCart();
-    console.log(deliveryOpt);
 
     deliveryOpt.forEach(option => {
 
