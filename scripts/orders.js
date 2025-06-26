@@ -1,182 +1,209 @@
-
-function quanityCount() {
-    let getLSCart = (localStorage.getItem('cart'));// array of objects
-
-    let quanityCount = document.querySelector('.cart-quantity');
-
-    if (getLSCart == null || getLSCart == 'null' || JSON.parse(getLSCart).length == 0) {
-        quanityCount.textContent = 0;
-
+document.addEventListener('DOMContentLoaded', () => {
+    const page = document.body.dataset.page;
+  
+    if (['page1', 'page2'].includes(page)) {
+      quantityCount();
     }
-    else {
-        let parsedgetLSCart = JSON.parse(getLSCart);
-        let cartQuant = 0;
-        parsedgetLSCart.forEach((value) => {
-            cartQuant += value.quantity;
-        });
-        quanityCount.textContent = cartQuant;
-
+  
+    if (page === 'page1') {
+      fillOrders();
     }
-}
-quanityCount();
-fillOrders();
-function fillOrders() {
-    let orderFromLS = localStorage.getItem('orders');
-    let orderFromLSParsed = JSON.parse(orderFromLS);
-    let gidContainer = document.querySelector('.orders-grid');
-    if (orderFromLS == null || orderFromLSParsed.length === 0) {
-        gidContainer.textContent = '';
-        let svg = `
-          <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 300px; flex-direction: column; text-align: center;">
-<svg width="360" height="100" viewBox="0 0 360 100" xmlns="http://www.w3.org/2000/svg">
-                    <rect class="bg" x="5" y="5" width="350" height="90" rx="12" ry="12"/>
-                    <g transform="translate(20,25)">
-                        <polyline class="icon" points="5,5 10,30 30,30 35,10 15,10"/>
-                        <circle class="icon" cx="12" cy="35" r="3"/>
-                        <circle class="icon" cx="28" cy="35" r="3"/>
-                            <line class="cross" x1="15" y1="15" x2="25" y2="25"/>
-                        <line class="cross" x1="25" y1="15" x2="15" y2="25"/>
-                    </g>
-                    <text class="text" x="80" y="50">No Orders Placed Yet</text>
-                    <line class="underline" x1="80" y1="60" x2="260" y2="60"/>
-                    </svg>
-                      <a href="amazon.html" style="margin-top: 20px; font-size: 18px; text-decoration: none; color: #FF9900; font-family: Arial, sans-serif;">
-      Start Shopping
-    </a>
-      </div>
-`
-
-        gidContainer.innerHTML = svg;
+  
+    if (page === 'page2') {
+      const trackingData = JSON.parse(sessionStorage.getItem('trackInfo') || 'null');
+      if (trackingData) {
+        renderTrackingInfo(trackingData.orderId, trackingData.productId);
+      } else {
+        const trackingGrid = document.querySelector('.order-tracking');
+        if (trackingGrid) {
+          trackingGrid.innerHTML = `<p>No tracking info found. <a href="orders.html">Return to orders</a></p>`;
+        }
+      }
     }
-    else {
-        // console.log(products);
-        console.log('orderFromLSParsed length ', orderFromLSParsed.length);
-
-        orderFromLSParsed.forEach((value) => {
-
-            let orderDate = new Date(value.orderTimeMS);
-            let formattedDate = orderDate.toLocaleDateString('en-US', {
-                month: 'long',
-                day: 'numeric'
-            });
-            let orderPrice = (Number((value.totalCostCents / 100) * 17.72).toFixed(2));
-            let orderId = value.id;
-            // prepend this <div class="order-container"> ansd append </div>
-            let orderHtml = ` 
-                <div class="order-container">
-                    <div class="order-header">
-                    <div class="order-header-left-section">
-                        <div class="order-date">
-                        <div class="order-header-label">Order Placed:</div>
-                        <div>${formattedDate}</div>
-                        </div>
-                        <div class="order-total">
-                        <div class="order-header-label">Total:</div>
-                        <div>R${orderPrice}</div>
-                        </div>
-                    </div>
-
-                    <div class="order-header-right-section">
-                        <div class="order-header-label">Order ID:</div>
-                        <div>${orderId}</div>
-                    </div>
-                    </div>
-
-                    <div class="order-details-grid">`;
-
-            value.products.forEach((product) => {
-                let arrivingOn = new Date(product.estimatedDeliveryTimeMs).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const actualProduct = products.find((fromData) => fromData.id == product.productId);
-
-                orderHtml += `
-
-                    <div class="product-row"> 
-                        <div class="product-image-container">
-                        <img src="${actualProduct.image}">
-                    </div>
-
-                    <div class="product-details">
-                        <div class="product-name">${actualProduct.name}</div>
-                        <div class="product-delivery-date">Arriving on: ${arrivingOn}</div>
-                        <div class="product-quantity">Quantity: ${product.quantity}</div>
-                        <button class="buy-again-button button-primary">
-                        <img class="buy-again-icon" src="images/icons/buy-again.png">
-                        <span class="buy-again-message">Buy it again</span>
-                        </button>
-                    </div>
-
-                    <div class="product-actions">
-                        <a href="tracking.html">
-                        <button class="track-package-button button-secondary">
-                            Track package
-                        </button>
-                        </a>
-                    </div>
-                    </div>`;
-            });
-
-            orderHtml += `</div> </div>`;
-
-            gidContainer.insertAdjacentHTML('beforeend', orderHtml);
-        });
-
-        document.querySelectorAll('.buy-again-button').forEach((button) => {
-            button.addEventListener('click', function () {
-              const orderContainer = this.closest('.order-container');
-              const productRow = this.closest('.product-row');
-          
-              const orderID = orderContainer.querySelector('.order-header-right-section .order-header-label').nextElementSibling.textContent.trim();
-              const repeatedOrder = orderFromLSParsed.find(order => order.id === orderID);
-          
-              const productName = productRow.querySelector('.product-name').textContent.trim();
-              const matchedProduct = products.find(p => p.name === productName);
-          
-              if (!matchedProduct) {
-                console.warn('Product not found in products list.');
-                return;
-              }
-              console.log(matchedProduct);
-              const productInOrder = repeatedOrder.products.find(p => p.productId === matchedProduct.id);
-              if (!productInOrder) {
-                console.warn('Product not found in order.');
-                return;
-              }
-          
-              const quantity = productInOrder.quantity;
-              const deliveryDate = new Date(productInOrder.estimatedDeliveryTimeMs);
-              const deliveryDay = deliveryDate.getDate();
-          
-              addProductToCart(this, matchedProduct.id, deliveryDay, quantity);
-            });
-          });
-          
-
-    }
-
-
-}
-// add to cart gaain
-function addProductToCart(element, productId, deliveryOptionId, quantity) {
+  
+    document.body.addEventListener('click', (e) => {
+      const buyAgainBtn = e.target.closest('.buy-again-button');
+      if (buyAgainBtn) return handleBuyAgain(buyAgainBtn);
+  
+      const trackBtn = e.target.closest('.track-package-button');
+      if (trackBtn) return handleTrackPackage(trackBtn);
+    });
+  });
+  
+  function quantityCount() {
+    const cartQuantityEl = document.querySelector('.cart-quantity');
+    if (!cartQuantityEl) return;
+  
     const cartLS = localStorage.getItem('cart');
-    let cart = cartLS ? JSON.parse(cartLS) : [];
-  
-    const existingIndex = cart.findIndex(item => item.productId === productId);
-  
-    if (existingIndex !== -1) {
-      const existingItem = cart[existingIndex];
-      existingItem.quantity += Number(quantity);
+    if (!cartLS || cartLS === 'null') {
+      cartQuantityEl.textContent = 0;
+      return;
     }
-    else {
-      cart.push({ id: uniqueID(), productId, deliveryOptionId, quantity: Number(quantity)});
+  
+    const cart = JSON.parse(cartLS);
+    const total = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartQuantityEl.textContent = total || 0;
+  }
+  
+  function fillOrders() {
+    const ordersGrid = document.querySelector('.orders-grid');
+    if (!ordersGrid) return;
+  
+    const ordersLS = localStorage.getItem('orders');
+    const parsedOrders = ordersLS ? JSON.parse(ordersLS) : [];
+  
+    if (!parsedOrders.length) {
+      ordersGrid.innerHTML = getNoOrdersHTML();
+      return;
+    }
+  
+    ordersGrid.innerHTML = '';
+    parsedOrders.forEach(order => {
+      ordersGrid.insertAdjacentHTML('afterbegin', renderOrderHTML(order));
+    });
+  }
+  
+  function renderOrderHTML(order) {
+    const date = new Date(order.orderTimeMS).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    const totalPrice = (order.totalCostCents / 100 * 17.72).toFixed(2);
+  
+    let html = `
+      <div class="order-container">
+        <div class="order-header">
+          <div class="order-header-left-section">
+            <div class="order-date">
+              <div class="order-header-label">Order Placed:</div>
+              <div>${date}</div>
+            </div>
+            <div class="order-total">
+              <div class="order-header-label">Total:</div>
+              <div>R${totalPrice}</div>
+            </div>
+          </div>
+          <div class="order-header-right-section">
+            <div class="order-header-label">Order ID:</div>
+            <div>${order.id}</div>
+          </div>
+        </div>
+        <div class="order-details-grid">`;
+  
+    order.products.forEach(p => {
+      const arriving = new Date(p.estimatedDeliveryTimeMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+      const productData = products.find(prod => prod.id === p.productId);
+      if (!productData) return;
+  
+      html += `
+        <div class="product-row">
+          <div class="product-image-container">
+            <img src="${productData.image}">
+          </div>
+          <div class="product-details">
+            <div class="product-name">${productData.name}</div>
+            <div class="product-delivery-date">Arriving on: ${arriving}</div>
+            <div class="product-quantity">Quantity: ${p.quantity}</div>
+            <button class="buy-again-button button-primary">
+              <img class="buy-again-icon" src="images/icons/buy-again.png">
+              <span class="buy-again-message">Buy it again</span>
+            </button>
+          </div>
+          <div class="product-actions">
+            <button class="track-package-button button-secondary">Track package</button>
+          </div>
+        </div>`;
+    });
+  
+    html += `</div></div>`;
+    return html;
+  }
+  
+  function getNoOrdersHTML() {
+    return `
+      <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 300px; flex-direction: column; text-align: center;">
+        <p>No Orders Placed Yet</p>
+        <a href="amazon.html" style="margin-top: 20px; font-size: 18px; text-decoration: none; color: #FF9900;">Start Shopping</a>
+      </div>`;
+  }
+  
+  function handleBuyAgain(button) {
+    const container = button.closest('.order-container');
+    const row = button.closest('.product-row');
+  
+    const orderId = container.querySelector('.order-header-right-section div:last-child').textContent.trim();
+    const order = JSON.parse(localStorage.getItem('orders')).find(o => o.id === orderId);
+  
+    const productName = row.querySelector('.product-name').textContent.trim();
+    const product = products.find(p => p.name === productName);
+    if (!product) return;
+  
+    const productInOrder = order.products.find(p => p.productId === product.id);
+    if (!productInOrder) return;
+  
+    const deliveryDate = new Date(productInOrder.estimatedDeliveryTimeMs).getDate();
+    addProductToCart(button, product.id, deliveryDate, productInOrder.quantity);
+  }
+  
+  function handleTrackPackage(button) {
+    const container = button.closest('.order-container');
+    const row = button.closest('.product-row');
+  
+    const orderId = container.querySelector('.order-header-right-section div:last-child').textContent.trim();
+    const order = JSON.parse(localStorage.getItem('orders')).find(o => o.id === orderId);
+  
+    const productName = row.querySelector('.product-name').textContent.trim();
+    const product = products.find(p => p.name === productName);
+    if (!product) return;
+  
+    sessionStorage.setItem('trackInfo', JSON.stringify({
+      orderId,
+      productId: product.id
+    }));
+  
+    window.location.href = 'tracking.html';
+  }
+  
+  function renderTrackingInfo(orderId, productId) {
+    const orders = JSON.parse(localStorage.getItem('orders')) || [];
+    const order = orders.find(o => o.id === orderId);
+    const productInOrder = order?.products.find(p => p.productId === productId);
+    const product = products.find(p => p.id === productId);
+    const trackingGrid = document.querySelector('.order-tracking');
+    if (!order || !productInOrder || !product || !trackingGrid) return;
+  
+    const deliveryDate = new Date(productInOrder.estimatedDeliveryTimeMs).toLocaleDateString('en-US', {
+      month: 'long', day: 'numeric'
+    });
+  
+    trackingGrid.innerHTML = `
+      <a class="back-to-orders-link link-primary" href="orders.html">View all orders</a>
+      <div class="delivery-date">Arriving on ${deliveryDate}</div>
+      <div class="product-info">${product.name}</div>
+      <div class="product-info">Quantity: ${productInOrder.quantity}</div>
+      <img class="product-image" src="${product.image}">
+      <div class="progress-labels-container">
+        <div class="progress-label">Preparing</div>
+        <div class="progress-label current-status">Shipped</div>
+        <div class="progress-label">Delivered</div>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar"></div>
+      </div>`;
+  }
+  
+  function addProductToCart(_, productId, deliveryOptionId, quantity) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const index = cart.findIndex(item => item.productId === productId);
+  
+    if (index !== -1) {
+      cart[index].quantity += Number(quantity);
+    } else {
+      cart.push({ id: uniqueID(), productId, deliveryOptionId, quantity: Number(quantity) });
     }
   
     localStorage.setItem('cart', JSON.stringify(cart));
-    quanityCount();
+    quantityCount();
   }
   
-function uniqueID() {
+  function uniqueID() {
     return crypto.randomUUID();
-}
+  }
+  
